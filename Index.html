@@ -1,0 +1,1218 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AstroPlay</title>
+<style>
+  :root {
+    --bg: #000000;
+    --bg-deep: #000000;
+    --surface: #161616;
+    --rule: #2c2c2c;
+    --cream: hwb(120 47% 4%);
+    --cream-dim: hwb(120 32% 28%);
+    --gold: #D3A24C;
+    --gold-deep: #A87E37;
+    --rust: #B4553C;
+    --rust-deep: #8E4230;
+    --font-display: Georgia, 'Times New Roman', serif;
+    --font-body: -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  }
+
+  * { box-sizing: border-box; }
+
+  html, body {
+    margin: 0;
+    padding: 0;
+    background: var(--bg);
+    color: var(--cream);
+    font-family: var(--font-body);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  body {
+    min-height: 100vh;
+    background-image: none;
+  }
+
+  .wrap {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 40px 20px 80px;
+  }
+
+  header.topbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 14px 4px;
+    border-bottom: 1px solid var(--rule);
+    margin-bottom: 0;
+  }
+
+  .icon-btn {
+    background: transparent;
+    border: none;
+    color: var(--cream);
+    width: 38px;
+    height: 38px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    padding: 0;
+    font-size: 1.1rem;
+    flex-shrink: 0;
+  }
+  .icon-btn:hover { background: var(--surface); }
+  .icon-btn svg { width: 20px; height: 20px; }
+
+  .brand-logo {
+    font-family: var(--font-body);
+    font-weight: 800;
+    font-size: 1.55rem;
+    letter-spacing: -0.5px;
+    color: var(--cream);
+    flex: 1;
+  }
+
+  .topbar-actions { display: flex; align-items: center; gap: 2px; }
+
+  .filter-tabs {
+    display: flex;
+    border-bottom: 1px solid var(--rule);
+    margin-bottom: 18px;
+  }
+  .filter-tabs button {
+    flex: 1;
+    background: transparent;
+    border: none;
+    border-bottom: 3px solid transparent;
+    color: var(--cream-dim);
+    font-size: 0.86rem;
+    font-weight: 600;
+    padding: 13px 6px;
+    border-radius: 0;
+  }
+  .filter-tabs button.active {
+    color: var(--cream);
+    border-bottom-color: var(--gold);
+  }
+
+  .search-row {
+    display: none;
+    margin-bottom: 18px;
+  }
+  .search-row.open { display: block; }
+  .search-row input { width: 100%; }
+
+  .composer {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: var(--surface);
+    border: 1px solid var(--rule);
+    border-radius: 24px;
+    padding: 12px 16px;
+    margin-bottom: 22px;
+    cursor: pointer;
+    color: var(--cream-dim);
+    font-size: 0.9rem;
+  }
+  .composer:hover { border-color: var(--gold-deep); }
+  .composer .composer-icon { margin-left: auto; font-size: 1.1rem; }
+
+  /* ---------- Add panel ---------- */
+
+  .add-modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.72);
+    align-items: flex-start;
+    justify-content: center;
+    padding: 20px;
+    overflow-y: auto;
+    z-index: 70;
+  }
+  .add-modal-overlay.open { display: flex; }
+
+  .reel {
+    position: relative;
+    background: var(--surface);
+    border: 1px solid var(--rule);
+    border-radius: 8px;
+    padding: 22px;
+    margin: 20px 0 40px;
+    max-width: 560px;
+    width: 100%;
+  }
+
+  .reel h2 {
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 1.2rem;
+    margin: 0 0 16px;
+  }
+
+  form#add-form {
+    display: grid;
+    grid-template-columns: 140px 1fr 1fr;
+    gap: 14px;
+  }
+
+  .poster-upload {
+    grid-row: span 3;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    align-items: center;
+  }
+
+  .poster-preview {
+    width: 140px;
+    height: 200px;
+    border-radius: 5px;
+    border: 1px dashed var(--rule);
+    background: var(--bg-deep);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    color: var(--cream-dim);
+    font-size: 0.72rem;
+    text-align: center;
+    padding: 8px;
+    cursor: pointer;
+  }
+  .poster-preview img { width: 100%; height: 100%; object-fit: cover; }
+  .poster-preview:hover { border-color: var(--gold-deep); color: var(--gold); }
+
+  .poster-upload input[type="file"] { display: none; }
+  .poster-upload button {
+    font-size: 0.72rem;
+    background: transparent;
+    color: var(--cream-dim);
+    border: 1px solid var(--rule);
+    padding: 5px 10px;
+    border-radius: 4px;
+  }
+
+  .field { display: flex; flex-direction: column; gap: 6px; }
+  .field.span-2 { grid-column: span 2; }
+
+  label { font-size: 0.76rem; color: var(--cream-dim); }
+
+  input[type="text"], input[type="number"], select, textarea {
+    background: var(--bg-deep);
+    border: 1px solid var(--rule);
+    border-radius: 4px;
+    color: var(--cream);
+    padding: 9px 11px;
+    font-family: var(--font-body);
+    font-size: 0.9rem;
+    width: 100%;
+  }
+  textarea { resize: vertical; min-height: 40px; }
+  input:focus, select:focus, textarea:focus {
+    outline: 2px solid var(--gold);
+    outline-offset: 1px;
+    border-color: var(--gold);
+  }
+
+  .form-actions {
+    grid-column: 2 / 4;
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .hint { font-size: 0.74rem; color: var(--cream-dim); margin-right: auto; }
+
+  button.btn { font-family: var(--font-body); }
+
+  button {
+    font-weight: 600;
+    font-size: 0.88rem;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    padding: 10px 20px;
+  }
+  button:active { transform: scale(0.97); }
+  .btn-primary { background: var(--gold); color: #1E1608; }
+  .btn-primary:hover { background: var(--gold-deep); }
+
+  /* ---------- Gallery grid ---------- */
+
+  .gallery {
+    display: flex;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    overflow-y: hidden;
+    gap: 14px;
+    padding-bottom: 10px;
+    scroll-snap-type: x proximity;
+    -webkit-overflow-scrolling: touch;
+  }
+  .gallery::-webkit-scrollbar { height: 6px; }
+  .gallery::-webkit-scrollbar-thumb { background: var(--rule); border-radius: 3px; }
+
+  .poster-card {
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    flex: 0 0 130px;
+    width: 130px;
+    scroll-snap-align: start;
+  }
+
+  .poster-frame {
+    aspect-ratio: 2 / 3;
+    background: var(--surface);
+    border: 1px solid var(--rule);
+    border-radius: 5px;
+    overflow: hidden;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .poster-frame img { width: 100%; height: 100%; object-fit: cover; display: block; }
+
+  .poster-frame .placeholder {
+    color: var(--cream-dim);
+    font-family: var(--font-display);
+    font-size: 2rem;
+    opacity: 0.35;
+  }
+
+  .poster-frame .watched-mark {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    width: 20px;
+    height: 20px;
+    border-radius: 3px;
+    background: var(--gold);
+    color: #1E1608;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.7rem;
+    font-weight: 700;
+  }
+
+  .poster-frame .favorite-mark {
+    position: absolute;
+    top: 8px;
+    left: 8px;
+    width: 20px;
+    height: 20px;
+    border-radius: 3px;
+    background: rgba(0,0,0,0.6);
+    border: 1px solid var(--gold);
+    color: var(--gold);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.72rem;
+  }
+
+  .poster-frame .play-mark {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(6,10,8,0);
+    opacity: 0;
+    transition: opacity 0.15s ease, background 0.15s ease;
+  }
+  .poster-card:hover .play-mark {
+    opacity: 1;
+    background: rgba(6,10,8,0.35);
+  }
+  .play-mark span {
+    width: 38px; height: 38px;
+    border-radius: 6px;
+    background: rgba(0,0,0,0.55);
+    border: 1px solid var(--gold);
+    color: var(--gold);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.95rem;
+  }
+
+  .poster-card:hover .poster-frame { border-color: var(--gold-deep); }
+
+  .poster-title {
+    font-size: 0.85rem;
+    font-weight: 600;
+    line-height: 1.25;
+  }
+  .poster-sub {
+    font-size: 0.74rem;
+    color: var(--cream-dim);
+  }
+
+  /* ---------- Modal ---------- */
+
+  .modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(6, 10, 8, 0.72);
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    z-index: 50;
+  }
+  .modal-overlay.open { display: flex; }
+
+  .modal {
+    background: var(--surface);
+    border: 1px solid var(--rule);
+    border-radius: 8px;
+    max-width: 480px;
+    width: 100%;
+    padding: 26px;
+    display: flex;
+    gap: 18px;
+  }
+
+  .modal .poster-frame { width: 130px; flex-shrink: 0; }
+
+  .modal-body { flex: 1; min-width: 0; }
+  .modal-body h3 {
+    font-family: var(--font-display);
+    font-size: 1.3rem;
+    margin: 0 0 4px;
+  }
+  .modal-body .year { color: var(--cream-dim); font-size: 0.85rem; margin-bottom: 10px; }
+
+  .meta-row { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 10px; }
+  .tag {
+    font-size: 0.72rem;
+    padding: 3px 9px;
+    border-radius: 3px;
+    background: var(--bg-deep);
+    border: 1px solid var(--rule);
+    color: var(--cream-dim);
+  }
+  .tag.quality { color: var(--gold); border-color: var(--gold-deep); }
+
+  .modal-body .notes {
+    font-size: 0.85rem;
+    color: var(--cream-dim);
+    line-height: 1.45;
+    white-space: pre-wrap;
+    margin-bottom: 16px;
+  }
+
+  .modal-actions { display: flex; gap: 10px; flex-wrap: wrap; }
+  .modal-actions button { font-size: 0.82rem; padding: 8px 14px; }
+  .btn-secondary { background: var(--bg-deep); color: var(--cream); border: 1px solid var(--rule) !important; }
+  .btn-secondary:hover { border-color: var(--gold-deep) !important; }
+  .btn-danger { background: transparent; color: var(--rust); border: 1px solid var(--rust-deep) !important; }
+  .btn-danger:hover { background: var(--rust-deep); color: var(--cream); }
+  .btn-watch { background: var(--gold); color: #1E1608 !important; border: none !important; }
+  .btn-watch:hover { background: var(--gold-deep); }
+  .btn-fav { background: var(--bg-deep); color: var(--gold); border: 1px solid var(--gold-deep) !important; }
+  .btn-fav.active { background: var(--gold); color: #1E1608 !important; }
+  .btn-fav:hover { border-color: var(--gold) !important; }
+
+  /* ---------- Video player overlay ---------- */
+
+  .player-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: #000;
+    align-items: center;
+    justify-content: center;
+    z-index: 80;
+  }
+  .player-overlay.open { display: flex; }
+
+  .player-overlay video {
+    max-width: 100%;
+    max-height: 100%;
+  }
+
+  .player-close {
+    position: absolute;
+    top: 16px; right: 16px;
+    background: rgba(20,32,26,0.85);
+    color: var(--cream);
+    border: 1px solid var(--rule) !important;
+    font-size: 1rem;
+    padding: 8px 14px;
+    border-radius: 20px;
+    z-index: 81;
+  }
+  .player-close:hover { border-color: var(--gold-deep) !important; }
+
+  .player-title {
+    position: absolute;
+    top: 16px; left: 16px;
+    color: var(--cream-dim);
+    font-size: 0.85rem;
+    z-index: 81;
+    max-width: 60%;
+  }
+  .modal-close {
+    position: absolute;
+    top: 10px; right: 14px;
+    background: transparent;
+    color: var(--cream-dim);
+    font-size: 1.1rem;
+    padding: 4px 8px;
+  }
+  .modal { position: relative; }
+
+  /* ---------- Empty ---------- */
+
+  .empty {
+    text-align: left;
+    padding: 56px 10px;
+    color: var(--cream-dim);
+    border: 1px dashed var(--rule);
+    border-radius: 6px;
+  }
+  .empty strong {
+    display: block;
+    font-family: var(--font-display);
+    color: var(--cream);
+    font-size: 1.25rem;
+    margin-bottom: 8px;
+  }
+
+  footer {
+    margin-top: 46px;
+    color: var(--cream-dim);
+    font-size: 0.76rem;
+    border-top: 1px solid var(--rule);
+    padding-top: 14px;
+  }
+
+  /* ---------- Chat de suporte ---------- */
+
+  .chat-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.6);
+    align-items: flex-end;
+    justify-content: flex-end;
+    padding: 20px;
+    z-index: 90;
+  }
+  .chat-overlay.open { display: flex; }
+
+  .chat-panel {
+    width: 100%;
+    max-width: 340px;
+    height: 480px;
+    max-height: 80vh;
+    background: var(--surface);
+    border: 1px solid var(--rule);
+    border-radius: 8px;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  .chat-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 16px;
+    border-bottom: 1px solid var(--rule);
+    background: var(--bg-deep);
+  }
+  .chat-header strong { font-family: var(--font-display); font-size: 1rem; }
+  .chat-header span { display: block; font-size: 0.7rem; color: var(--cream-dim); margin-top: 2px; }
+  .chat-close {
+    background: transparent;
+    color: var(--cream-dim);
+    font-size: 1rem;
+    padding: 4px 8px;
+  }
+
+  .chat-body {
+    flex: 1;
+    overflow-y: auto;
+    padding: 14px 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .chat-msg {
+    max-width: 85%;
+    padding: 8px 12px;
+    border-radius: 6px;
+    font-size: 0.84rem;
+    line-height: 1.4;
+  }
+  .chat-msg.from-support {
+    background: var(--bg-deep);
+    border: 1px solid var(--rule);
+    align-self: flex-start;
+  }
+  .chat-msg.from-user {
+    background: var(--gold);
+    color: #1E1608;
+    align-self: flex-end;
+  }
+
+  .chat-footer {
+    display: flex;
+    gap: 8px;
+    padding: 12px;
+    border-top: 1px solid var(--rule);
+  }
+  .chat-footer input {
+    flex: 1;
+    background: var(--bg-deep);
+    border: 1px solid var(--rule);
+    border-radius: 4px;
+    color: var(--cream);
+    padding: 9px 11px;
+    font-size: 0.85rem;
+  }
+  .chat-footer input:focus {
+    outline: 2px solid var(--gold);
+    outline-offset: 1px;
+    border-color: var(--gold);
+  }
+  .chat-footer button {
+    background: var(--gold);
+    color: #1E1608;
+    font-size: 0.8rem;
+    padding: 9px 14px;
+    border-radius: 4px;
+  }
+  .chat-footer button:hover { background: var(--gold-deep); }
+
+  /* ---------- Notificação (toast) ---------- */
+
+  .toast {
+    position: fixed;
+    left: 50%;
+    bottom: 26px;
+    transform: translateX(-50%) translateY(12px);
+    background: var(--surface);
+    border: 1px solid var(--rule);
+    color: var(--cream);
+    padding: 12px 18px;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    line-height: 1.4;
+    max-width: min(90vw, 340px);
+    text-align: center;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.55);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s ease, transform 0.2s ease;
+    z-index: 100;
+  }
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+  @media (max-width: 640px) {
+    .chat-overlay { padding: 0; align-items: flex-end; }
+    .chat-panel { max-width: 100%; height: 70vh; max-height: 70vh; border-radius: 8px 8px 0 0; }
+    form#add-form { grid-template-columns: 1fr; }
+    .poster-upload { grid-row: auto; }
+    .field.span-2 { grid-column: span 1; }
+    .form-actions { grid-column: 1; flex-wrap: wrap; }
+    .modal { flex-direction: column; }
+    .modal .poster-frame { width: 100%; max-width: 160px; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="topbar">
+    <button class="icon-btn" id="btn-menu" aria-label="Menu">☰</button>
+    <div class="brand-logo">AstroPlay</div>
+    <div class="topbar-actions">
+      <button class="icon-btn" id="composer-open" aria-label="Adicionar vídeo">+</button>
+      <button class="icon-btn" id="btn-search-toggle" aria-label="Buscar">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      </button>
+      <button class="icon-btn" id="support-open" aria-label="Suporte">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <nav class="filter-tabs" id="tabs">
+    <button data-filter="all" class="active">Feed</button>
+    <button data-filter="watched">Assistidos</button>
+    <button data-filter="favorite">Favoritos</button>
+  </nav>
+
+  <div class="search-row" id="search-row">
+    <input type="text" id="search" placeholder="Buscar por título ou gênero...">
+  </div>
+
+  <div class="composer" id="composer-open-2">
+    <span>Adicionar um vídeo...</span>
+    <span class="composer-icon">🎬</span>
+  </div>
+
+  <div id="gallery" class="gallery"></div>
+
+  <footer>Tudo (capas e vídeos) fica salvo neste navegador, neste dispositivo — nada é enviado a nenhum servidor. Use "Importar vídeo" uma vez pra guardar o arquivo; depois disso "Assistir" abre direto, sem precisar escolher o arquivo de novo. Vídeos grandes podem levar um tempinho pra importar e ocupam espaço no aparelho.<br>Espaço usado pelos vídeos salvos: <strong id="storage-usage">0 MB</strong></footer>
+</div>
+
+<div class="add-modal-overlay" id="add-modal-overlay">
+  <div class="reel">
+    <button class="modal-close" id="add-modal-close">✕</button>
+    <h2>Adicionar vídeo</h2>
+    <form id="add-form">
+      <div class="poster-upload">
+        <label class="poster-preview" id="poster-preview" for="f-poster">Clique para escolher a capa</label>
+        <input type="file" id="f-poster" accept="image/*">
+        <button type="button" id="clear-poster">Remover capa</button>
+      </div>
+
+      <div class="field span-2">
+        <label for="f-title">Título</label>
+        <input type="text" id="f-title" placeholder="Ex: Cidade de Deus" required>
+      </div>
+
+      <div class="field">
+        <label for="f-year">Ano</label>
+        <input type="number" id="f-year" placeholder="2002" min="1888" max="2100">
+      </div>
+      <div class="field">
+        <label for="f-genre">Gênero</label>
+        <input type="text" id="f-genre" placeholder="Drama, Ação...">
+      </div>
+
+      <div class="field">
+        <label for="f-quality">Qualidade</label>
+        <select id="f-quality">
+          <option value="">—</option>
+          <option>CAM</option>
+          <option>HDCAM</option>
+          <option>WEB-DL</option>
+          <option>BluRay 720p</option>
+          <option>BluRay 1080p</option>
+          <option>4K / 2160p</option>
+        </select>
+      </div>
+      <div class="field">
+        <label for="f-size">Tamanho</label>
+        <input type="text" id="f-size" placeholder="Ex: 2.1 GB">
+      </div>
+
+      <div class="field span-2">
+        <label for="f-notes">Notas</label>
+        <textarea id="f-notes" placeholder="Legenda, dublagem, onde salvou..."></textarea>
+      </div>
+
+      <div class="form-actions">
+        <span class="hint">A capa fica salva só neste dispositivo</span>
+        <button type="submit" class="btn-primary">Adicionar à galeria</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modal-overlay">
+  <div class="modal">
+    <button class="modal-close" id="modal-close">✕</button>
+    <div class="poster-frame" id="modal-poster"></div>
+    <div class="modal-body">
+      <h3 id="modal-title"></h3>
+      <div class="year" id="modal-year"></div>
+      <div class="meta-row" id="modal-meta"></div>
+      <div class="notes" id="modal-notes"></div>
+      <div class="modal-actions">
+        <button class="btn-watch" id="modal-watch">▶ Assistir</button>
+        <button class="btn-fav" id="modal-fav">☆ Favoritar</button>
+        <button class="btn-secondary" id="modal-import-video">📥 Importar vídeo</button>
+        <button class="btn-secondary" id="modal-toggle"></button>
+        <button class="btn-danger" id="modal-remove">Remover</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<input type="file" id="video-picker" accept="video/*" style="display:none">
+
+<div class="player-overlay" id="player-overlay">
+  <div class="player-title" id="player-title"></div>
+  <button class="player-close" id="player-close">✕ Fechar</button>
+  <video id="player-video" controls autoplay playsinline></video>
+</div>
+
+<div class="chat-overlay" id="chat-overlay">
+  <div class="chat-panel">
+    <div class="chat-header">
+      <div>
+        <strong>Suporte</strong>
+        <span>Encaminhamos sua mensagem pelo WhatsApp</span>
+      </div>
+      <button class="chat-close" id="chat-close" type="button">✕</button>
+    </div>
+    <div class="chat-body" id="chat-body">
+      <div class="chat-msg from-support">Olá! Como posso ajudar com a sua galeria de vídeos? Digite sua mensagem abaixo que eu te chamo no WhatsApp.</div>
+    </div>
+    <form class="chat-footer" id="chat-form">
+      <input type="text" id="chat-input" placeholder="Digite sua mensagem..." autocomplete="off">
+      <button type="submit">Enviar</button>
+    </form>
+  </div>
+</div>
+
+<script>
+(function () {
+  const STORAGE_KEY = 'galeria-filmes-offline';
+  const MAX_POSTER_DIM = 400;
+  let filter = 'all';
+  let query = '';
+  let pendingPoster = null;
+  let activeId = null;
+
+  function load() {
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      return raw ? JSON.parse(raw) : [];
+    } catch (e) { return []; }
+  }
+
+  function showToast(message, duration) {
+    let toast = document.getElementById('app-toast');
+    if (!toast) {
+      toast = document.createElement('div');
+      toast.id = 'app-toast';
+      toast.className = 'toast';
+      document.body.appendChild(toast);
+    }
+    toast.textContent = message;
+    toast.classList.add('show');
+    clearTimeout(toast._timer);
+    toast._timer = setTimeout(function () { toast.classList.remove('show'); }, duration || 3200);
+  }
+
+  function save(movies) {
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(movies));
+    } catch (e) {
+      showToast('Não foi possível salvar (o armazenamento local pode estar cheio). Tente usar capas menores ou remover algum vídeo antigo.');
+    }
+  }
+
+  let movies = load();
+
+  // ---- IndexedDB: guarda o arquivo de vídeo de cada filme permanentemente ----
+  const VIDEO_DB_NAME = 'galeria-filmes-videos';
+  const VIDEO_STORE = 'videos';
+
+  function openVideoDB() {
+    return new Promise((resolve, reject) => {
+      const req = indexedDB.open(VIDEO_DB_NAME, 1);
+      req.onupgradeneeded = () => { req.result.createObjectStore(VIDEO_STORE); };
+      req.onsuccess = () => resolve(req.result);
+      req.onerror = () => reject(req.error);
+    });
+  }
+
+  async function saveVideo(id, blob) {
+    const db = await openVideoDB();
+    return new Promise((resolve, reject) => {
+      const tx = db.transaction(VIDEO_STORE, 'readwrite');
+      tx.objectStore(VIDEO_STORE).put(blob, id);
+      tx.oncomplete = () => resolve();
+      tx.onerror = () => reject(tx.error);
+    });
+  }
+
+  async function loadVideo(id) {
+    const db = await openVideoDB();
+    return new Promise((resolve, reject) => {
+      const tx = db.transaction(VIDEO_STORE, 'readonly');
+      const req = tx.objectStore(VIDEO_STORE).get(id);
+      req.onsuccess = () => resolve(req.result || null);
+      req.onerror = () => reject(req.error);
+    });
+  }
+
+  async function deleteVideo(id) {
+    const db = await openVideoDB();
+    return new Promise((resolve, reject) => {
+      const tx = db.transaction(VIDEO_STORE, 'readwrite');
+      tx.objectStore(VIDEO_STORE).delete(id);
+      tx.oncomplete = () => resolve();
+      tx.onerror = () => reject(tx.error);
+    });
+  }
+
+  const gallery = document.getElementById('gallery');
+  const searchInput = document.getElementById('search');
+  const tabs = document.getElementById('tabs');
+
+  const posterPreview = document.getElementById('poster-preview');
+  const posterInput = document.getElementById('f-poster');
+  const clearPosterBtn = document.getElementById('clear-poster');
+
+  function escapeHtml(str) {
+    return String(str).replace(/[&<>"']/g, c => ({
+      '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+    }[c]));
+  }
+
+  // ---- poster upload with client-side resize (keeps localStorage lean) ----
+  posterInput.addEventListener('change', function () {
+    const file = this.files[0];
+    if (!file) return;
+    const img = new Image();
+    const reader = new FileReader();
+    reader.onload = function (e) {
+      img.onload = function () {
+        const canvas = document.createElement('canvas');
+        let w = img.width, h = img.height;
+        if (w > h) {
+          if (w > MAX_POSTER_DIM) { h = Math.round(h * MAX_POSTER_DIM / w); w = MAX_POSTER_DIM; }
+        } else {
+          if (h > MAX_POSTER_DIM) { w = Math.round(w * MAX_POSTER_DIM / h); h = MAX_POSTER_DIM; }
+        }
+        canvas.width = w; canvas.height = h;
+        canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+        pendingPoster = canvas.toDataURL('image/jpeg', 0.82);
+        posterPreview.innerHTML = `<img src="${pendingPoster}" alt="">`;
+      };
+      img.src = e.target.result;
+    };
+    reader.readAsDataURL(file);
+  });
+
+  clearPosterBtn.addEventListener('click', function () {
+    pendingPoster = null;
+    posterInput.value = '';
+    posterPreview.innerHTML = 'Clique para escolher a capa';
+  });
+
+  function formatBytes(bytes) {
+    if (!bytes) return '0 MB';
+    const gb = bytes / (1024 ** 3);
+    if (gb >= 1) return gb.toFixed(2) + ' GB';
+    const mb = bytes / (1024 ** 2);
+    return mb.toFixed(1) + ' MB';
+  }
+
+  function updateStorageUsage() {
+    const total = movies.reduce((sum, m) => sum + (m.videoBytes || 0), 0);
+    const el = document.getElementById('storage-usage');
+    if (el) el.textContent = formatBytes(total);
+  }
+
+  function render() {
+    const q = query.trim().toLowerCase();
+    updateStorageUsage();
+    let list = movies.filter(m => {
+      if (filter === 'watched' && !m.watched) return false;
+      if (filter === 'favorite' && !m.favorite) return false;
+      if (q && !(m.title.toLowerCase().includes(q) || (m.genre || '').toLowerCase().includes(q))) return false;
+      return true;
+    });
+
+    if (movies.length === 0) {
+      gallery.innerHTML = `<div class="empty"><strong>Galeria vazia</strong>Adicione o primeiro vídeo tocando em "Adicionar um vídeo".</div>`;
+      return;
+    }
+    if (list.length === 0) {
+      gallery.innerHTML = `<div class="empty"><strong>Nada por aqui</strong>Nenhum vídeo corresponde à busca ou ao filtro atual.</div>`;
+      return;
+    }
+
+    list.sort((a, b) => b.addedAt - a.addedAt);
+
+    gallery.innerHTML = list.map(m => `
+      <div class="poster-card" data-id="${m.id}">
+        <div class="poster-frame">
+          ${m.poster ? `<img src="${m.poster}" alt="">` : `<span class="placeholder">${escapeHtml((m.title || '?').charAt(0).toUpperCase())}</span>`}
+          ${m.favorite ? '<div class="favorite-mark">★</div>' : ''}
+          ${m.watched ? '<div class="watched-mark">✓</div>' : ''}
+          <div class="play-mark"><span>▶</span></div>
+        </div>
+        <div class="poster-title">${escapeHtml(m.title)}</div>
+        <div class="poster-sub">${[m.year, m.genre].filter(Boolean).map(escapeHtml).join(' · ')}</div>
+      </div>
+    `).join('');
+  }
+
+  document.getElementById('add-form').addEventListener('submit', function (e) {
+    e.preventDefault();
+    const title = document.getElementById('f-title').value.trim();
+    if (!title) return;
+
+    movies.push({
+      id: Date.now().toString(36) + Math.random().toString(36).slice(2, 7),
+      title,
+      year: document.getElementById('f-year').value.trim(),
+      genre: document.getElementById('f-genre').value.trim(),
+      quality: document.getElementById('f-quality').value,
+      size: document.getElementById('f-size').value.trim(),
+      notes: document.getElementById('f-notes').value.trim(),
+      poster: pendingPoster,
+      watched: false,
+      favorite: false,
+      hasVideo: false,
+      addedAt: Date.now()
+    });
+
+    save(movies);
+    this.reset();
+    pendingPoster = null;
+    posterPreview.innerHTML = 'Clique para escolher a capa';
+    closeAddModal();
+    render();
+  });
+
+  gallery.addEventListener('click', function (e) {
+    const card = e.target.closest('.poster-card');
+    if (!card) return;
+    openModal(card.dataset.id);
+  });
+
+  // ---- modal de adicionar filme ----
+  const addModalOverlay = document.getElementById('add-modal-overlay');
+  function openAddModal() { addModalOverlay.classList.add('open'); }
+  function closeAddModal() { addModalOverlay.classList.remove('open'); }
+  document.getElementById('composer-open').addEventListener('click', openAddModal);
+  document.getElementById('composer-open-2').addEventListener('click', openAddModal);
+  document.getElementById('add-modal-close').addEventListener('click', closeAddModal);
+  addModalOverlay.addEventListener('click', function (e) { if (e.target === addModalOverlay) closeAddModal(); });
+
+  // ---- busca (toggle) ----
+  const searchRow = document.getElementById('search-row');
+  document.getElementById('btn-search-toggle').addEventListener('click', function () {
+    searchRow.classList.toggle('open');
+    if (searchRow.classList.contains('open')) searchInput.focus();
+  });
+
+  searchInput.addEventListener('input', function () { query = this.value; render(); });
+
+  tabs.addEventListener('click', function (e) {
+    const btn = e.target.closest('button[data-filter]');
+    if (!btn) return;
+    filter = btn.dataset.filter;
+    [...tabs.querySelectorAll('button')].forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    render();
+  });
+
+  // ---- modal ----
+  const overlay = document.getElementById('modal-overlay');
+  const modalPoster = document.getElementById('modal-poster');
+  const modalTitle = document.getElementById('modal-title');
+  const modalYear = document.getElementById('modal-year');
+  const modalMeta = document.getElementById('modal-meta');
+  const modalNotes = document.getElementById('modal-notes');
+  const modalToggle = document.getElementById('modal-toggle');
+  const modalFav = document.getElementById('modal-fav');
+  const modalRemove = document.getElementById('modal-remove');
+  const modalImportVideo = document.getElementById('modal-import-video');
+
+  function openModal(id) {
+    const m = movies.find(x => x.id === id);
+    if (!m) return;
+    activeId = id;
+    modalPoster.innerHTML = m.poster ? `<img src="${m.poster}" alt="">` : `<span class="placeholder">${escapeHtml((m.title || '?').charAt(0).toUpperCase())}</span>`;
+    modalTitle.textContent = m.title;
+    modalYear.textContent = m.year || '';
+    modalMeta.innerHTML = [
+      m.genre ? `<span class="tag">${escapeHtml(m.genre)}</span>` : '',
+      m.quality ? `<span class="tag quality">${escapeHtml(m.quality)}</span>` : '',
+      m.size ? `<span class="tag">${escapeHtml(m.size)}</span>` : '',
+      m.hasVideo ? `<span class="tag">Vídeo salvo</span>` : `<span class="tag">Sem vídeo salvo</span>`
+    ].join('');
+    modalNotes.textContent = m.notes || '';
+    modalToggle.textContent = m.watched ? 'Marcar como não assistido' : 'Marcar como assistido';
+    modalFav.textContent = m.favorite ? '★ Favoritado' : '☆ Favoritar';
+    modalFav.classList.toggle('active', !!m.favorite);
+    modalImportVideo.textContent = m.hasVideo ? '📥 Reimportar vídeo' : '📥 Importar vídeo';
+    overlay.classList.add('open');
+  }
+
+  function closeModal() { overlay.classList.remove('open'); activeId = null; }
+
+  document.getElementById('modal-close').addEventListener('click', closeModal);
+  overlay.addEventListener('click', function (e) { if (e.target === overlay) closeModal(); });
+
+  // ---- assistir: agora reproduz o vídeo já salvo no IndexedDB (não pede arquivo toda vez) ----
+  const videoPicker = document.getElementById('video-picker');
+  const playerOverlay = document.getElementById('player-overlay');
+  const playerVideo = document.getElementById('player-video');
+  const playerTitle = document.getElementById('player-title');
+  const playerClose = document.getElementById('player-close');
+  let currentObjectUrl = null;
+  let importTargetId = null;
+
+  async function openPlayerFor(movie) {
+    let blob;
+    try {
+      blob = await loadVideo(movie.id);
+    } catch (e) {
+      showToast('Não foi possível abrir o vídeo salvo.');
+      return;
+    }
+    if (!blob) {
+      showToast('Este vídeo ainda não tem arquivo salvo. Toque em "Importar vídeo" no card para adicionar.');
+      return;
+    }
+    if (currentObjectUrl) URL.revokeObjectURL(currentObjectUrl);
+    currentObjectUrl = URL.createObjectURL(blob);
+    playerVideo.src = currentObjectUrl;
+    playerTitle.textContent = movie.title || '';
+    playerOverlay.classList.add('open');
+    closeModal();
+  }
+
+  function closePlayer() {
+    playerOverlay.classList.remove('open');
+    playerVideo.pause();
+    playerVideo.removeAttribute('src');
+    playerVideo.load();
+    if (currentObjectUrl) { URL.revokeObjectURL(currentObjectUrl); currentObjectUrl = null; }
+  }
+  playerClose.addEventListener('click', closePlayer);
+
+  function openImportVideoFor(id) {
+    importTargetId = id;
+    videoPicker.value = '';
+    videoPicker.click();
+  }
+
+  videoPicker.addEventListener('change', async function () {
+    const file = this.files[0];
+    const targetId = importTargetId;
+    if (!file || !targetId) return;
+    const movie = movies.find(x => x.id === targetId);
+    if (!movie) return;
+
+    const originalLabel = modalImportVideo.textContent;
+    modalImportVideo.textContent = 'Importando...';
+    modalImportVideo.disabled = true;
+
+    try {
+      await saveVideo(movie.id, file);
+      movie.hasVideo = true;
+      movie.videoBytes = file.size;
+      save(movies);
+      render();
+      if (activeId === movie.id) openModal(movie.id);
+      showToast('Vídeo de "' + movie.title + '" salvo. Agora é só tocar em "Assistir".');
+    } catch (e) {
+      showToast('Não foi possível salvar o vídeo (ele pode ser grande demais para o espaço disponível no aparelho).');
+    } finally {
+      modalImportVideo.disabled = false;
+      modalImportVideo.textContent = originalLabel;
+    }
+  });
+
+  document.getElementById('modal-watch').addEventListener('click', function () {
+    const m = movies.find(x => x.id === activeId);
+    if (!m) return;
+    openPlayerFor(m);
+  });
+
+  modalImportVideo.addEventListener('click', function () {
+    if (!activeId) return;
+    openImportVideoFor(activeId);
+  });
+
+  gallery.addEventListener('click', function (e) {
+    const mark = e.target.closest('.play-mark');
+    if (mark) {
+      e.stopPropagation();
+      const card = e.target.closest('.poster-card');
+      const m = movies.find(x => x.id === card.dataset.id);
+      if (m) openPlayerFor(m);
+    }
+  });
+
+  modalToggle.addEventListener('click', function () {
+    const m = movies.find(x => x.id === activeId);
+    if (!m) return;
+    m.watched = !m.watched;
+    save(movies);
+    render();
+    closeModal();
+  });
+
+  modalFav.addEventListener('click', function () {
+    const m = movies.find(x => x.id === activeId);
+    if (!m) return;
+    m.favorite = !m.favorite;
+    save(movies);
+    openModal(m.id);
+    render();
+  });
+
+  modalRemove.addEventListener('click', function () {
+    const removedId = activeId;
+    movies = movies.filter(x => x.id !== removedId);
+    save(movies);
+    deleteVideo(removedId).catch(() => {});
+    render();
+    closeModal();
+  });
+
+  // ---- chat de suporte ----
+  const SUPPORT_PHONE = '5599991594212';
+  const supportOpenBtn = document.getElementById('support-open');
+  const chatOverlay = document.getElementById('chat-overlay');
+  const chatClose = document.getElementById('chat-close');
+  const chatBody = document.getElementById('chat-body');
+  const chatForm = document.getElementById('chat-form');
+  const chatInput = document.getElementById('chat-input');
+
+  function addChatMessage(text, from) {
+    const div = document.createElement('div');
+    div.className = 'chat-msg from-' + from;
+    div.textContent = text;
+    chatBody.appendChild(div);
+    chatBody.scrollTop = chatBody.scrollHeight;
+  }
+
+  supportOpenBtn.addEventListener('click', function () {
+    chatOverlay.classList.add('open');
+    chatInput.focus();
+  });
+  chatClose.addEventListener('click', function () {
+    chatOverlay.classList.remove('open');
+  });
+  chatOverlay.addEventListener('click', function (e) {
+    if (e.target === chatOverlay) chatOverlay.classList.remove('open');
+  });
+
+  chatForm.addEventListener('submit', function (e) {
+    e.preventDefault();
+    const text = chatInput.value.trim();
+    if (!text) return;
+    addChatMessage(text, 'user');
+    chatInput.value = '';
+    setTimeout(function () {
+      addChatMessage('Encaminhando sua mensagem para o suporte...', 'support');
+      const url = 'https://wa.me/' + SUPPORT_PHONE + '?text=' + encodeURIComponent(text);
+      window.open(url, '_blank');
+    }, 400);
+  });
+
+  render();
+})();
+</script>
+</body>
+</html>
